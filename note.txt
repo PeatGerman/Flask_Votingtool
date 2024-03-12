@@ -1,0 +1,50 @@
+
+in arbeit:
+Datenbank design
+url:https://dbdiagram.io/d
+
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table user {
+  id int [primary key]
+  username String
+  password String
+  created_at timestamp
+}
+
+Table voting { //gesamte umfrage
+  uuid uuid [primary key]
+  voting_creator_id int
+  voting_id int
+  created_at timestamp
+}
+
+Table user_question {//einzelne frage
+  id integer [primary key]
+  text string
+  voting_id int
+  status varchar
+
+}
+
+//antwortmöglichkeiten
+Table selection_option{
+  id int
+  text string
+  //in proggress
+
+}
+
+Table user_answer{ // user antwort
+  id int
+  text string
+  voting_id int
+}
+//wie speicher ich die votings?
+
+//Ref: posts.user_id > users.id // many-to-one
+
+Ref: user.id > voting.voting_creator_id
+Ref: voting.voting_id <> user_question.voting_id
+Ref: user_answer.voting_id <> user_question.voting_id
