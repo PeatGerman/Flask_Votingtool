@@ -1,8 +1,3 @@
-
-in arbeit:
-Datenbank design
-url:https://dbdiagram.io/d
-
 // Use DBML to define your database structure
 // Docs: https://dbml.dbdiagram.io/docs
 
@@ -10,41 +5,61 @@ Table user {
   id int [primary key]
   username String
   password String
-  created_at timestamp
+
+  auth int
+
 }
 
 Table voting { //gesamte umfrage
-  uuid uuid [primary key]
+  id int [primary key]
   voting_creator_id int
-  voting_id int
+
   created_at timestamp
+  enddate timestamp
+  // auth?
 }
 
 Table user_question {//einzelne frage
   id integer [primary key]
   text string
   voting_id int
-  status varchar
+  response_type int //
 
 }
 
 //antwortmöglichkeiten
-Table selection_option{
-  id int
+Table possible_selection_option{
+  id int [primary key]
+  user_question_id int
   text string
   //in proggress
 
 }
 
 Table user_answer{ // user antwort
-  id int
+  id int [primary key]
   text string
+  user_question_id int
+  user_selected_option int
+  token string
+
+}
+
+Table tokenpool{
+  token String
+  username string
   voting_id int
 }
+
+
 //wie speicher ich die votings?
 
 //Ref: posts.user_id > users.id // many-to-one
 
 Ref: user.id > voting.voting_creator_id
-Ref: voting.voting_id <> user_question.voting_id
-Ref: user_answer.voting_id <> user_question.voting_id
+Ref: user_answer.user_question_id <> user_question.id
+Ref: possible_selection_option.user_question_id < user_question.id
+Ref: user_answer.user_selected_option < possible_selection_option.id
+Ref: tokenpool.username <> user.username
+Ref: tokenpool.voting_id <> voting.id
+Ref: tokenpool.token - user_answer.token
