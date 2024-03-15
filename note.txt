@@ -13,7 +13,7 @@ Table user {
 Table voting { //gesamte umfrage
   id int [primary key]
   voting_creator_id int
-
+  voting_id int
   created_at timestamp
   enddate timestamp
   // auth?
@@ -38,7 +38,7 @@ Table possible_selection_option{
 
 Table user_answer{ // user antwort
   id int [primary key]
-  text string
+  answer_text string
   user_question_id int
   user_selected_option int
   token string
@@ -47,7 +47,7 @@ Table user_answer{ // user antwort
 
 Table tokenpool{
   token String
-  username string
+  email string
   voting_id int
 }
 
@@ -57,9 +57,10 @@ Table tokenpool{
 //Ref: posts.user_id > users.id // many-to-one
 
 Ref: user.id > voting.voting_creator_id
+Ref: voting.voting_id <> user_question.voting_id
 Ref: user_answer.user_question_id <> user_question.id
 Ref: possible_selection_option.user_question_id < user_question.id
 Ref: user_answer.user_selected_option < possible_selection_option.id
-Ref: tokenpool.username <> user.username
+
 Ref: tokenpool.voting_id <> voting.id
 Ref: tokenpool.token - user_answer.token
