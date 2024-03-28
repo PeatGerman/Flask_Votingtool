@@ -1,10 +1,200 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Umfrageformular{% endblock %}
+{% block content%}
 
-</body>
-</html>
+<div class="container mt-5">
+  <h1>Umfrageformular</h1>
+  <form id="surveyForm" action="/user/submit_survey" method="post">
+    <div id="questionsContainer">
+      <!-- Dynamisch generierte Fragefelder werden hier eingefügt -->
+    </div>
+    <button type="button" class="btn btn-primary mt-3" onclick="addQuestionField()">Weitere Frage hinzufügen</button>
+    <button type="submit" class="btn btn-success mt-3">Umfrage absenden</button>
+    <button type="button" class="btn btn-danger mt-3" onclick="clearSurvey()">Umfrage löschen</button>
+  </form>
+</div>
+
+<!-- Bootstrap JavaScript -->
+<script>
+    window.onload(addQuestionField())
+
+  function addQuestionField() {
+    var questionContainer = document.getElementById('questionsContainer');
+    var numQuestions = questionContainer.children.length + 1; // Get the number of existing questions and add 1
+    var questionField = document.createElement('div');
+    questionField.classList.add('form-group', 'question-field');
+    questionField.id = 'questionField' + numQuestions;
+    questionField.innerHTML = `
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Frage ${numQuestions}</h5>
+          <input type="text" class="form-control mb-2" id="question${numQuestions}" name="questions[]" placeholder="Frage eingeben..." required>
+          <div class="form-group">
+            <label for="answerType${numQuestions}">Antworttyp wählen:</label>
+            <select class="form-control" id="answerType${numQuestions}" name="answerType${numQuestions}" onchange="generateAnswerFields(${numQuestions})" required>
+              <option value="">Bitte auswählen</option>
+              <option value="single_choice">Single Choice</option>
+              <option value="multiple_choice">Multiple Choice</option>
+              <option value="free_text">Freitext</option>
+              <option value="scale_rating">Skala/Bewertung</option>
+              <option value="ranking">Rangordnung</option>
+            </select>
+          </div>
+          <div id="answersContainer${numQuestions}">
+            <!-- Dynamisch generierte Antwortfelder werden hier eingefügt -->
+
+          </div>
+          <!-- Hier wird der Button für das Hinzufügen einer weiteren Antwort eingefügt -->
+          <button type="button" class="btn btn-secondary mt-2 d-none" id="addAnswerButton${numQuestions}" onclick="addAnswerField(${numQuestions})">Antwort hinzufügen</button>
+          <!-- Hier wird der Button zum Löschen dieser Frage eingefügt -->
+          <button type="button" class="btn btn-danger mt-2" onclick="removeQuestionField(${numQuestions})">Frage löschen</button>
+        </div>
+      </div>
+    `;
+    questionContainer.appendChild(questionField);
+  }
+
+  function generateAnswerFields(questionIndex) {
+    var answerType = document.getElementById('answerType' + questionIndex).value;
+    var answerContainer = document.getElementById('answersContainer' + questionIndex);
+    answerContainer.innerHTML = ''; // Clear previous answer fields
+
+    if (answerType === 'single_choice' || answerType === 'multiple_choice' || answerType === 'free_text') {
+        document.getElementById('addAnswerButton' + questionIndex).classList.remove('d-none');
+    } else {
+        document.getElementById('addAnswerButton' + questionIndex).classList.add('d-none');
+    }
+
+    if (answerType === 'single_choice' || answerType === 'multiple_choice') {
+        var numAnswers = 2; // For single and multiple choice, initially show 2 answer fields
+        for (var i = 0; i < numAnswers; i++) {
+            var answerField = document.createElement('div');
+            answerField.classList.add('form-group');
+            answerField.innerHTML = `
+                <label for="answer${i + 1}">Antwort ${i + 1}:</label>
+                <input type="text" class="form-control" name="answers${questionIndex}[]" id="answer${i + 1}" required>
+            `;
+            answerContainer.appendChild(answerField);
+        }
+    } else if (answerType === 'scale_rating') {
+        var answerField = document.createElement('div');
+        answerField.classList.add('form-group');
+        answerField.innerHTML = `
+           <div class="form-group">
+           <label for="answer">Skala/Bewertung:</label>
+           <input type="range" class="form-control-range" min="1" max="5" step="1" name="answers${questionIndex}[]" id="slider${questionIndex}" onchange="updateOutput(${questionIndex})" required>
+           <output for="slider${questionIndex}" id="output${questionIndex}">Mittel</output>
+         </div>
+
+        `;
+        answerContainer.appendChild(answerField);
+    } else {
+        var answerField = document.createElement('div');
+        answerField.classList.add('form-group');
+        answerField.innerHTML = `
+            <label for="answer">Antwort:</label>
+            <input type="text" class="form-control" name="answers${questionIndex}[]" required>
+        `;
+        answerContainer.appendChild(answerField);
+    }
+  }
+
+function addAnswerField(questionIndex) {
+    var answersContainer = document.getElementById('answersContainer' + questionIndex);
+
+    var answerField = document.createElement('div');
+    answerField.classList.add('form-group', 'mb-3', 'position-relative', 'd-flex', 'align-items-center');
+
+    var inputWrapper = document.createElement('div');
+    inputWrapper.classList.add('flex-grow-1', 'me-2');
+
+    var answerControlsWrapper = document.createElement('div');
+    answerControlsWrapper.classList.add('d-flex', 'align-items-center');
+
+    var label = document.createElement('label');
+    label.innerHTML = 'Antwort ' + (answersContainer.children.length + 1) + ':'; // Nummerierung der Antwort entsprechend der Anzahl der vorhandenen Antworten
+    label.setAttribute('for', 'answer' + questionIndex + '-' + (answersContainer.children.length + 1)); // Eindeutige ID für das Label
+    label.classList.add('me-2');
+
+    var inputField = document.createElement('input');
+    inputField.classList.add('form-control');
+    inputField.type = 'text';
+    inputField.name = 'answers' + questionIndex + '[]';
+    inputField.id = 'answer' + questionIndex + '-' + (answersContainer.children.length + 1); // Eindeutige ID für das Eingabefeld
+    inputField.required = true;
+
+    var deleteButton = document.createElement('button');
+    deleteButton.innerHTML = '<i class="bi bi-trash"></i>';
+    deleteButton.classList.add('btn', 'btn-danger', 'ms-2', 'ml-2' );
+    deleteButton.onclick = function() {
+        removeAnswerField(answerField);
+    };
+
+    answerControlsWrapper.appendChild(inputField);
+    answerControlsWrapper.appendChild(deleteButton);
+
+    inputWrapper.appendChild(label);
+    inputWrapper.appendChild(answerControlsWrapper);
+
+    answerField.appendChild(inputWrapper);
+    answersContainer.appendChild(answerField);
+}
+
+
+function removeAnswerField(answerField) {
+    answerField.remove();
+
+}
+
+function removeSinleQuestionField(questionIndex) {
+    var answerToRemove = document.getElementById('answersContainer' + questionIndex);
+    answerToRemove.remove();
+
+}
+function updateOutput(questionIndex) {
+  var slider = document.getElementById('slider' + questionIndex);
+  var output = document.getElementById('output' + questionIndex);
+  output.innerText = convertToText(slider.value);
+}
+
+function convertToText(value) {
+  // Hier können Sie je nach Wert des Sliders den entsprechenden Text definieren
+  switch (parseInt(value)) {
+    case 1:
+      return 'Sehr schlecht';
+    case 2:
+      return 'Schlecht';
+    case 3:
+      return 'Mittel';
+    case 4:
+      return 'Gut';
+    case 5:
+      return 'Sehr gut';
+    default:
+      return 'Mittel';
+  }
+}
+
+function removeQuestionField(questionIndex) {
+    var questionToRemove = document.getElementById('questionField' + questionIndex);
+    questionToRemove.remove();
+
+}
+
+
+function clearSurvey() {
+
+  var surveyForm = document.getElementById('surveyForm');
+  surveyForm.reset(); // Formular zurücksetzen
+  var questionsContainer = document.getElementById('questionsContainer');
+  questionsContainer.innerHTML = ''; // Alle dynamisch generierten Fragen entfernen
+
+}
+
+
+
+
+
+
+</script>
+{% endblock %}

@@ -3,7 +3,7 @@
 
 Table user {
   id int [primary key]
-  username String
+  email String
   password String
 
   auth int
@@ -14,17 +14,17 @@ Table voting { //gesamte umfrage
   id int [primary key]
   voting_creator_id int
   voting_id int
-  created_at timestamp
+  start_date timestamp
   enddate timestamp
-  // auth?
+  acces_by_all bool //privat 0  public 1
 }
 
 Table user_question {//einzelne frage
   id integer [primary key]
   text string
   voting_id int
-  response_type int //
-
+  response_type int
+  global_use bool //ob die frage eine allgemeingültige ist (öfter benutzt werden kann)oder spezifisch nur auf die umfrage
 }
 
 //antwortmöglichkeiten
