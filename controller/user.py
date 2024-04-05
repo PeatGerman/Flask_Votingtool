@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for
+import requests
 
 user = Blueprint('user', __name__)
 
@@ -22,11 +23,57 @@ def results():
 
 @user.route('/submit_survey', methods=['GET', 'POST'])
 def insert_vote():
-
-    #print(request.form)
-    for key, values in request.form.lists():
-        print(f"headline: {key}")
-        for value in values:
-            print(f"Value: {value}")
-    print(" ")
+    print(request.form)
+    # for key, values in request.form.lists():
+    #    print(f"headline: {key}")
+    #    for value in values:
+    #        print(f"Value: {value}")
+    # print(" ")
     return redirect(url_for('user.login_page'))
+
+
+######################################################################       Test stuff
+
+def response_index():
+    return redirect(url_for('user.index'))
+
+
+@user.route('/test_answer', methods=['GET', 'POST'])
+def generate_response():
+    url = 'http://localhost:5000/user/submit_survey'
+    testnumber = 2
+    data = {'testnumber': testnumber}
+    match testnumber:
+        case 1:
+            data = {
+                'surveyTitle': 'Überschrift',
+                'calendar_day': '02/04/2024',
+                'questions[1]': 'Frage',
+                'answerType1': 'single_choice',
+                'answers1[]': ['Antwortmöglichkeit1', 'Antwortmöglichkeit2']
+            }
+        case 2:
+            data = {
+                'surveyTitle': 'Überschrift_1',
+                'calendar_day': '',
+                'questions[1]': 'Frage_1',
+                'answerType1': 'single_choice',
+                'answers1[]': ['Antwortmöglichkeit1_1', 'Antwortmöglichkeit2_1'],
+                'questions[2]': 'Frage_2',
+                'answerType2': 'multiple_choice',
+                'answers2[]': ['Antwortmöglichkeit1_2', 'Antwortmöglichkeit2_2'],
+                'questions[3]': 'Frage_3',
+                'answerType3': 'free_text',
+                'answers3[]': ['Antwortmöglichkeit1_3', 'Antwortmöglichkeit2_3'],
+                'questions[5]': 'Skala',
+                'answerType5': 'scale_rating',
+                'answers5[]': '3'
+            }
+
+    response = requests.post(url, data=data)
+    return response_index()
+
+
+@user.route('/')
+def index():
+    return render_template('index.html')

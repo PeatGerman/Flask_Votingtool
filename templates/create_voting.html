@@ -9,18 +9,60 @@
     <label for="surveyTitle" class="form-label">Umfrageüberschrift:</label>
     <input type="text" class="form-control" id="surveyTitle" name="surveyTitle" placeholder="Geben Sie hier die Überschrift Ihrer Umfrage ein...">
   </div>
+      <div class="mb-4">
+       <label for="calendar_day" class="block text-lg font-semibold mb-2">Datum auswählen wann die Umfrage beendet werden soll</label>
+    <div class="input-group w-25">
+        <input type="text" id="calendar_day" name="calendar_day" class="form-control" placeholder="DD/MM/YYYY" readonly>
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" id="datePickerButton">
+                <i class="bi bi-calendar" id="calendar_icon" ></i></button>
+        </div>
+    </div>
+    </div>
     <div id="questionsContainer">
       <!-- Dynamisch generierte Fragefelder werden hier eingefügt -->
     </div>
-    <button type="button" class="btn btn-primary mt-3" onclick="addQuestionField()">Weitere Frage hinzufügen</button>
-    <button type="submit" class="btn btn-success mt-3">Umfrage absenden</button>
-    <button type="button" class="btn btn-danger mt-3" onclick="clearSurvey()">Umfrage löschen</button>
+
+
+</div>
+
+   <div style="position: sticky; bottom: 10px; margin-top: 20px;">
+      <button type="button" class="btn btn-primary mt-3 mb-3" onclick="addQuestionField()">Weitere Frage hinzufügen</button>
+      <button type="submit" class="btn btn-success mt-3 mb-3">Umfrage absenden</button>
+      <button type="button" class="btn btn-danger mt-3 mb-3" onclick="clearSurvey()">Umfrage löschen</button>
+    </div>
   </form>
 </div>
 
 <!-- Bootstrap JavaScript -->
 <script>
-    window.onload(addQuestionField())
+    document.getElementById('datePickerButton').addEventListener('click', function() {
+    document.getElementById('calendar_day').focus();
+    });
+
+
+
+    window.onload = function() {
+        addQuestionField();
+        $('#calendar_day').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            todayHighlight: true,
+            orientation: "bottom auto",
+            startDate: "today",
+            endDate: "+1y",
+            clearBtn: true,
+            todayBtn: true,
+            forceParse: false,
+            daysOfWeekDisabled: [0, 6], // Blockiert Sonntag (0) und Samstag (6)
+            showWeekNumbers: true,
+             language: 'de'
+        });
+    };
+
+
+
+
 
   function addQuestionField() {
     var questionContainer = document.getElementById('questionsContainer');
@@ -32,7 +74,7 @@
       <div class="card mb-3">
         <div class="card-body">
           <h5 class="card-title">Frage</h5>
-          <input type="text" class="form-control mb-2" id="question${numQuestions}" name="questions[]" placeholder="Frage eingeben..." required>
+          <input type="text" class="form-control mb-2" id="question${numQuestions}" name="questions[${numQuestions}]" placeholder="Frage eingeben..." required>
           <div class="form-group">
             <label for="answerType${numQuestions}">Antworttyp wählen:</label>
             <select class="form-control" id="answerType${numQuestions}" name="answerType${numQuestions}" onchange="generateAnswerFields(${numQuestions})" required>
@@ -52,11 +94,16 @@
           <button type="button" class="btn btn-secondary mt-2 d-none" id="addAnswerButton${numQuestions}" onclick="addAnswerField(${numQuestions})">Antwort hinzufügen</button>
           <!-- Hier wird der Button zum Löschen dieser Frage eingefügt -->
           <button type="button" class="btn btn-danger mt-2" onclick="removeQuestionField(${numQuestions})">Frage löschen</button>
+
+
+
         </div>
       </div>
     `;
     questionContainer.appendChild(questionField);
   }
+
+
 
   function generateAnswerFields(questionIndex) {
     var answerType = document.getElementById('answerType' + questionIndex).value;
@@ -148,8 +195,6 @@ function addAnswerField(questionIndex) {
 function removeAnswerField(answerField) {
     answerField.remove();
 }
-    
-
 
 //for skala
 function updateOutput(questionIndex) {
@@ -194,7 +239,7 @@ function clearSurvey() {
   surveyForm.reset(); // Formular zurücksetzen
   var questionsContainer = document.getElementById('questionsContainer');
   questionsContainer.innerHTML = ''; // Alle dynamisch generierten Fragen entfernen
-
+    addQuestionField();
 
 
 }
