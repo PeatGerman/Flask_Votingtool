@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from static.get_data_from_json import get_data_from_json
 from db.check_db_connenction import test_db_connection
+from db.models import *
 
 
 class Configuration:
@@ -23,8 +24,10 @@ app.secret_key = config.secret_key
 app.config['SQLALCHEMY_DATABASE_URI'] = config.sql_alchemy_database_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = config.sql_alchemy_track_modifications
 
+
 db = SQLAlchemy()
 db.init_app(app)
+
 
 from controller.auth import auth
 from controller.admin import admin

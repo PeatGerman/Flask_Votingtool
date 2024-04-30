@@ -23,13 +23,19 @@ def results():
 
 @user.route('/submit_survey', methods=['GET', 'POST'])
 def insert_vote():
-    print(request.form)
+    #print(request.form)
     # for key, values in request.form.lists():
     #    print(f"headline: {key}")
     #    for value in values:
     #        print(f"Value: {value}")
     # print(" ")
     return redirect(url_for('user.login_page'))
+
+
+@user.route('/test_survey', methods=['GET', 'POST'])
+def voting_overview():
+
+    return render_template("voting_overview.html")
 
 
 ######################################################################       Test stuff
@@ -55,7 +61,7 @@ def generate_response():
         case 2:
             data = {
                 'surveyTitle': 'Überschrift_1',
-                'calendar_day': '',
+                'calendar_day': '02/04/2024',
                 'questions[1]': 'Frage_1',
                 'answerType1': 'single_choice',
                 'answers1[]': ['Antwortmöglichkeit1_1', 'Antwortmöglichkeit2_1'],
