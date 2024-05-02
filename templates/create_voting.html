@@ -24,7 +24,6 @@
     </div>
 
 
-</div>
 
    <div style="position: sticky; bottom: 10px; margin-top: 20px;">
       <button type="button" class="btn btn-primary mt-3 mb-3" onclick="addQuestionField()">Weitere Frage hinzufügen</button>
@@ -65,9 +64,9 @@
 
 
   function addQuestionField() {
-    var questionContainer = document.getElementById('questionsContainer');
-    var numQuestions = questionContainer.children.length + 1; // Get the number of existing questions and add 1
-    var questionField = document.createElement('div');
+    const questionContainer = document.getElementById('questionsContainer');
+    let numQuestions = questionContainer.children.length + 1; // Get the number of existing questions and add 1
+    let questionField = document.createElement('div');
     questionField.classList.add('form-group', 'question-field');
     questionField.id = 'questionField' + numQuestions;
     questionField.innerHTML = `
@@ -83,7 +82,6 @@
               <option value="multiple_choice">Multiple Choice</option>
               <option value="free_text">Freitext</option>
               <option value="scale_rating">Skala/Bewertung</option>
-              <option value="ranking">Rangordnung</option>
             </select>
           </div>
           <div id="answersContainer${numQuestions}">
@@ -106,8 +104,8 @@
 
 
   function generateAnswerFields(questionIndex) {
-    var answerType = document.getElementById('answerType' + questionIndex).value;
-    var answerContainer = document.getElementById('answersContainer' + questionIndex);
+    let answerType = document.getElementById('answerType' + questionIndex).value;
+    let answerContainer = document.getElementById('answersContainer' + questionIndex);
     answerContainer.innerHTML = ''; // Clear previous answer fields
 
     if (answerType === 'single_choice' || answerType === 'multiple_choice' || answerType === 'free_text') {
@@ -117,9 +115,9 @@
     }
 
     if (answerType === 'single_choice' || answerType === 'multiple_choice') {
-        var numAnswers = 2; // For single and multiple choice, initially show 2 answer fields
-        for (var i = 0; i < numAnswers; i++) {
-            var answerField = document.createElement('div');
+        const numAnswers = 2; // For single and multiple choice, initially show 2 answer fields
+        for (let i = 0; i < numAnswers; i++) {
+            const answerField = document.createElement('div');
             answerField.classList.add('form-group');
             answerField.innerHTML = `
                 <label for="answer${i + 1}">Mögliche Antwort:</label>
@@ -128,7 +126,7 @@
             answerContainer.appendChild(answerField);
         }
     } else if (answerType === 'scale_rating') {
-        var answerField = document.createElement('div');
+        const answerField = document.createElement('div');
         answerField.classList.add('form-group');
         answerField.innerHTML = `
            <div class="form-group">
@@ -140,7 +138,7 @@
         `;
         answerContainer.appendChild(answerField);
     } else {
-        var answerField = document.createElement('div');
+        const answerField = document.createElement('div');
         answerField.classList.add('form-group');
         answerField.innerHTML = `
             <label for="answer">Antwort:</label>
@@ -151,30 +149,30 @@
   }
 
 function addAnswerField(questionIndex) {
-    var answersContainer = document.getElementById('answersContainer' + questionIndex);
+    const answersContainer = document.getElementById('answersContainer' + questionIndex);
 
-    var answerField = document.createElement('div');
+    const answerField = document.createElement('div');
     answerField.classList.add('form-group', 'mb-3', 'position-relative', 'd-flex', 'align-items-center');
 
-    var inputWrapper = document.createElement('div');
+    const inputWrapper = document.createElement('div');
     inputWrapper.classList.add('flex-grow-1', 'me-2');
 
-    var answerControlsWrapper = document.createElement('div');
+    const answerControlsWrapper = document.createElement('div');
     answerControlsWrapper.classList.add('d-flex', 'align-items-center');
 
-    var label = document.createElement('label');
+    const label = document.createElement('label');
     label.innerHTML = 'Mögliche Antwort :'; // Nummerierung der Antwort entsprechend der Anzahl der vorhandenen Antworten
     label.setAttribute('for', 'answer' + questionIndex + '-' + (answersContainer.children.length + 1)); // Eindeutige ID für das Label
     label.classList.add('me-2');
 
-    var inputField = document.createElement('input');
+    const inputField = document.createElement('input');
     inputField.classList.add('form-control');
     inputField.type = 'text';
     inputField.name = 'answers' + questionIndex + '[]';
     inputField.id = 'answer' + questionIndex + '-' + (answersContainer.children.length + 1); // Eindeutige ID für das Eingabefeld
     inputField.required = true;
 
-    var deleteButton = document.createElement('button');
+    const deleteButton = document.createElement('button');
     deleteButton.innerHTML = '<i class="bi bi-trash"></i>';
     deleteButton.classList.add('btn', 'btn-danger', 'ms-2', 'ml-2');
     deleteButton.onclick = function() {
@@ -198,8 +196,8 @@ function removeAnswerField(answerField) {
 
 //for skala
 function updateOutput(questionIndex) {
-  var slider = document.getElementById('slider' + questionIndex);
-  var output = document.getElementById('output' + questionIndex);
+  let slider = document.getElementById('slider' + questionIndex);
+  let output = document.getElementById('output' + questionIndex);
   output.innerText = convertToText(slider.value);
 }
 
@@ -225,7 +223,7 @@ function convertToText(value) {
 function removeQuestionField(questionIndex) {
 
 
-    var questionToRemove = document.getElementById('questionField' + questionIndex);
+    let questionToRemove = document.getElementById('questionField' + questionIndex);
 
     questionToRemove.remove();
 
@@ -235,9 +233,9 @@ function removeQuestionField(questionIndex) {
 //clear full form
 function clearSurvey() {
 
-  var surveyForm = document.getElementById('surveyForm');
+  const surveyForm = document.getElementById('surveyForm');
   surveyForm.reset(); // Formular zurücksetzen
-  var questionsContainer = document.getElementById('questionsContainer');
+  const questionsContainer = document.getElementById('questionsContainer');
   questionsContainer.innerHTML = ''; // Alle dynamisch generierten Fragen entfernen
     addQuestionField();
 
