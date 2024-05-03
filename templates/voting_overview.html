@@ -2,11 +2,12 @@
 {% block title %}Umfrageformular{% endblock %}
 {% block content%}
 
+ <!--
     <script src="{{ url_for('static', filename='js/datePickerHandling.js') }}"></script>
 <script src="{{ url_for('static', filename='js/questionHandling.js') }}"></script>
 <script src="{{ url_for('static', filename='js/formHandling.js') }}"></script>
 
-
+-->
 
 <div class="container mt-5">
   <h1>Umfrageformular</h1>
@@ -40,18 +41,237 @@
 
 
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', function () {
     initializeDatePicker();
-    addQuestionField(); // Initialisiere mit einer ersten Frage
+    addQuestionField();
+});
+
+var data = {
+    'surveyTitle': 'Überschrift_1',
+    'calendar_day': '02/04/2024',
+    'questions[1]': 'Frage_1',
+    'answerType1': 'single_choice',
+    'answers1[]': ['Antwortmöglichkeit1_1', 'Antwortmöglichkeit2_1'],
+    'questions[2]': 'Frage_2',
+    'answerType2': 'multiple_choice',
+    'answers2[]': ['Antwortmöglichkeit1_2', 'Antwortmöglichkeit2_2'],
+    'questions[3]': 'Frage_3',
+    'answerType3': 'free_text',
+    'answers3[]': ['Antwortmöglichkeit1_3', 'Antwortmöglichkeit2_3'],
+    'questions[5]': 'Skala',
+    'answerType5': 'scale_rating',
+    'answers5[]': '3'
+};
+
+for (let i = 1; i <= Object.keys(data).length; i++) {
+    if (data[`questions[${i}]`]) {
+        addQuestionField(data, i);
+    }
+}
+
+function removeQuestionField(num) {
+    let element = document.getElementById('questionField' + num);
+    element.parentNode.removeChild(element);
+}
+
+function removeAnswerField(fieldElement) {
+    fieldElement.parentNode.removeChild(fieldElement);
+}
+
+function clearSurvey() {
+    const surveyForm = document.getElementById('surveyForm');
+    surveyForm.reset();
+    const questionsContainer = document.getElementById('questionsContainer');
+    questionsContainer.innerHTML = '';
+    addQuestionField();
+}
+
+document.getElementById('surveyForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    alert('Umfrage erfolgreich gesendet!');
 });
 
 
-// Hier würde ich empfehlen, das Skript in mehrere kleinere Dateien aufzuteilen, z.B.:
-// - formHandling.js für allgemeine Formularlogik
-// - questionHandling.js für die Logik zur Handhabung der Fragen
-// - datePickerHandling.js für alle DatePicker-spezifischen Funktionen
 
-// Weitere Details wie das Hinzufügen von Fragen, das Generieren von Antwortfeldern, usw. sollten in den entsprechenden Dateien verarbeitet werden.
+function addQuestionField() {
+    const questionContainer = document.getElementById('questionsContainer');
+    const numQuestions = questionContainer.children.length + 1;
+
+    const questionField = document.createElement('div');
+    questionField.className = 'form-group question-field';
+    questionField.id = 'questionField' + numQuestions;
+
+    const card = document.createElement('div');
+    card.className = 'card mb-3';
+
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body';
+
+    const cardTitle = document.createElement('h5');
+    cardTitle.className = 'card-title';
+    cardTitle.textContent = 'Frage';
+    cardBody.appendChild(cardTitle);
+
+    const questionInput = document.createElement('input');
+    questionInput.type = 'text';
+    questionInput.className = 'form-control mb-2';
+    questionInput.id = 'question' + numQuestions;
+    questionInput.name = `questions[${numQuestions}]`;
+    questionInput.placeholder = 'Frage eingeben...';
+    questionInput.required = true;
+    cardBody.appendChild(questionInput);
+
+    // Der Rest der Frageerstellungsfunktion hier...
+    questionContainer.appendChild(questionField);
+}
+
+function removeQuestionField(questionIndex) {
+    const questionToRemove = document.getElementById('questionField' + questionIndex);
+    questionToRemove.remove();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('addQuestion').addEventListener('click', addQuestionField);
+});
+
+
+
+
+function addQuestionField(questionData, num) {
+    const questionContainer = document.getElementById('questionsContainer');
+    const numQuestions = questionContainer.children.length + 1;
+
+    const questionField = document.createElement('div');
+    questionField.classList.add('form-group', 'question-field');
+    questionField.id = 'questionField' + numQuestions;
+
+    const card = document.createElement('div');
+    card.classList.add('card', 'mb-3');
+
+    const cardBody = document.createElement('div');
+    cardBody.classList.add('card-body');
+
+    const cardTitle = document.createElement('h5');
+    cardTitle.classList.add('card-title');
+    cardTitle.textContent = 'Frage';
+    cardBody.appendChild(cardTitle);
+
+    const questionInput = document.createElement('input');
+    questionInput.type = 'text';
+    questionInput.classList.add('form-control', 'mb-2');
+    questionInput.id = 'question' + numQuestions;
+    questionInput.name = `questions[${numQuestions}]`;
+    questionInput.placeholder = 'Frage eingeben...';
+    questionInput.required = true;
+    questionInput.value = questionData[`questions[${numQuestions}]`];
+    cardBody.appendChild(questionInput);
+
+    const formGroup = document.createElement('div');
+    formGroup.classList.add('form-group');
+    const answerTypeLabel = document.createElement('label');
+    answerTypeLabel.setAttribute('for', 'answerType' + numQuestions);
+    answerTypeLabel.textContent = 'Antworttyp wählen:';
+    formGroup.appendChild(answerTypeLabel);
+
+    const answerTypeSelect = document.createElement('select');
+    answerTypeSelect.classList.add('form-control');
+    answerTypeSelect.id = `answerType${numQuestions}`;
+    answerTypeSelect.name = `answerType${numQuestions}`;
+    answerTypeSelect.required = true;
+    answerTypeSelect.value = questionData[`answerType${numQuestions}`];
+    answerTypeSelect.addEventListener('change', () => generateAnswerFields(numQuestions));
+    formGroup.appendChild(answerTypeSelect);
+
+    const options = ['Bitte auswählen', 'Single Choice', 'Multiple Choice', 'Freitext', 'Skala/Bewertung', 'Rangordnung'];
+    const optionValues = ['', 'single_choice', 'multiple_choice', 'free_text', 'scale_rating', 'ranking'];
+    for (let i = 0; i < options.length; i++) {
+        const option = document.createElement('option');
+        option.value = optionValues[i];
+        option.textContent = options[i];
+        answerTypeSelect.appendChild(option);
+    }
+    cardBody.appendChild(formGroup);
+
+    const answersContainer = document.createElement('div');
+    answersContainer.id = 'answersContainer' + numQuestions;
+    cardBody.appendChild(answersContainer);
+
+    let answers = questionData[`answers${num}[]`];
+    if (answers) {
+        for (let i = 0; i < answers.length; i++) {
+            addAnswerField(num, i+1, answers[i]);
+        }
+    }
+
+    const answerButton = document.createElement('button');
+    answerButton.type = 'button';
+    answerButton.classList.add('btn', 'btn-secondary', 'mt-2', 'd-none');
+    answerButton.id = 'addAnswerButton' + numQuestions;
+    answerButton.setAttribute('onclick', `addAnswerField(${numQuestions})`);
+    answerButton.textContent = 'Antwort hinzufügen';
+    cardBody.appendChild(answerButton);
+
+    const questionButton = document.createElement('button');
+    questionButton.type = 'button';
+    questionButton.classList.add('btn', 'btn-danger', 'mt-2');
+    questionButton.setAttribute('onclick', `removeQuestionField(${numQuestions})`);
+    questionButton.textContent = 'Frage löschen';
+    cardBody.appendChild(questionButton);
+
+    card.appendChild(cardBody);
+    questionField.appendChild(card);
+
+    questionContainer.appendChild(questionField);
+}
+
+function addAnswerField(questionIndex, answerIndex, answerValue) {
+    const answersContainer = document.getElementById('answersContainer' + questionIndex);
+
+    const answerField = document.createElement('div');
+    answerField.classList.add('form-group', 'mb-3', 'position-relative', 'd-flex', 'align-items-center');
+
+    const inputWrapper = document.createElement('div');
+    inputWrapper.classList.add('flex-grow-1', 'me-2');
+
+    const answerControlsWrapper = document.createElement('div');
+    answerControlsWrapper.classList.add('d-flex', 'align-items-center');
+
+    const label = document.createElement('label');
+    let labelText = document.createTextNode('Mögliche Antwort :');
+    label.appendChild(labelText);
+    label.setAttribute('for', 'answer' + questionIndex + '-' + (answersContainer.children.length + 1));
+    label.classList.add('me-2');
+
+    const inputField = document.createElement('input');
+    inputField.classList.add('form-control');
+    inputField.type = 'text';
+    inputField.name = 'answers' + questionIndex + '[]';
+    inputField.id = 'answer' + questionIndex + '-' + (answersContainer.children.length + 1);
+    inputField.required = true;
+    inputField.value = answerValue;
+
+    const deleteButton = document.createElement('button');
+    let icon = document.createElement('i');
+    icon.classList.add('bi', 'bi-trash');
+    deleteButton.appendChild(icon);
+    deleteButton.classList.add('btn', 'btn-danger', 'ms-2', 'ml-2');
+    deleteButton.onclick = function() {
+        removeAnswerField(answerField);
+    };
+
+    answerControlsWrapper.appendChild(inputField);
+    answerControlsWrapper.appendChild(deleteButton);
+
+    inputWrapper.appendChild(label);
+    inputWrapper.appendChild(answerControlsWrapper);
+
+    answerField.appendChild(inputWrapper);
+    answersContainer.appendChild(answerField);
+};
+
+
+
+
 
     </script>
 {% endblock %}

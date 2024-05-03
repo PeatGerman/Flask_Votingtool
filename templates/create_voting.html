@@ -1,75 +1,98 @@
 {% extends "base.html" %}
 {% block title %}Umfrageformular{% endblock %}
-{% block content%}
+{% block content %}
 
-<div class="container mt-5">
-  <h1>Umfrageformular</h1>
-  <form id="surveyForm" action="/user/submit_survey" method="post">
-  <div class="mb-3">
-    <label for="surveyTitle" class="form-label">Umfrageüberschrift:</label>
-    <input type="text" class="form-control" id="surveyTitle" name="surveyTitle" placeholder="Geben Sie hier die Überschrift Ihrer Umfrage ein...">
-  </div>
-      <div class="mb-4">
-       <label for="calendar_day" class="block text-lg font-semibold mb-2">Datum auswählen wann die Umfrage beendet werden soll</label>
-    <div class="input-group w-25">
-        <input type="text" id="calendar_day" name="calendar_day" class="form-control" placeholder="DD/MM/YYYY" readonly>
-        <div class="input-group-append">
-            <button class="btn btn-outline-secondary" type="button" id="datePickerButton">
-                <i class="bi bi-calendar" id="calendar_icon" ></i></button>
-        </div>
+    <div class="container mt-5">
+        <h1>Umfrageformular</h1>
+        <form id="surveyForm" action="/user/submit_survey" method="post">
+            <div class="mb-3">
+                <label for="surveyTitle" class="form-label">Umfrageüberschrift:</label>
+                <input type="text" class="form-control" id="surveyTitle" name="surveyTitle"
+                       placeholder="Geben Sie hier die Überschrift Ihrer Umfrage ein...">
+            </div>
+            <div class="mb-4">
+                <label for="calendar_day" class="block text-lg font-semibold mb-2">Datum auswählen wann die Umfrage
+                    beendet werden soll</label>
+                <div class="input-group w-25">
+                    <input type="text" id="calendar_day" name="calendar_day" class="form-control"
+                           placeholder="DD/MM/YYYY" readonly>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="datePickerButton">
+                            <i class="bi bi-calendar" id="calendar_icon"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div id="questionsContainer">
+                <!-- Dynamisch generierte Fragefelder werden hier eingefügt -->
+            </div>
+
+
+            <div style="position: sticky; bottom: 10px; margin-top: 20px;">
+                <button type="button" class="btn btn-primary mt-3 mb-3" onclick="addQuestionField()">Weitere Frage
+                    hinzufügen
+                </button>
+                <button type="submit" class="btn btn-success mt-3 mb-3">Umfrage absenden</button>
+                <button type="button" class="btn btn-danger mt-3 mb-3" onclick="clearSurvey()">Umfrage löschen</button>
+            </div>
+        </form>
     </div>
-    </div>
-    <div id="questionsContainer">
-      <!-- Dynamisch generierte Fragefelder werden hier eingefügt -->
-    </div>
 
-
-
-   <div style="position: sticky; bottom: 10px; margin-top: 20px;">
-      <button type="button" class="btn btn-primary mt-3 mb-3" onclick="addQuestionField()">Weitere Frage hinzufügen</button>
-      <button type="submit" class="btn btn-success mt-3 mb-3">Umfrage absenden</button>
-      <button type="button" class="btn btn-danger mt-3 mb-3" onclick="clearSurvey()">Umfrage löschen</button>
-    </div>
-  </form>
-</div>
-
-<!-- Bootstrap JavaScript -->
-<script>
-    document.getElementById('datePickerButton').addEventListener('click', function() {
-    document.getElementById('calendar_day').focus();
-    });
-
-
-
-    window.onload = function() {
-        addQuestionField();
-        $('#calendar_day').datepicker({
-            format: 'dd/mm/yyyy',
-            autoclose: true,
-            todayHighlight: true,
-            orientation: "bottom auto",
-            startDate: "today",
-            endDate: "+1y",
-            clearBtn: true,
-            todayBtn: true,
-            forceParse: false,
-            daysOfWeekDisabled: [0, 6], // Blockiert Sonntag (0) und Samstag (6)
-            showWeekNumbers: true,
-             language: 'de'
+    <!-- Bootstrap JavaScript -->
+    <script>
+        document.getElementById('datePickerButton').addEventListener('click', function () {
+            document.getElementById('calendar_day').focus();
         });
-    };
 
 
+        window.onload = function () {
+
+            $('#calendar_day').datepicker({
+                format: 'dd/mm/yyyy',
+                autoclose: true,
+                todayHighlight: true,
+                orientation: "bottom auto",
+                startDate: "today",
+                endDate: "+1y",
+                clearBtn: true,
+                todayBtn: true,
+                forceParse: false,
+                daysOfWeekDisabled: [0, 6], // Blockiert Sonntag (0) und Samstag (6)
+                showWeekNumbers: true,
+                language: 'de'
+            });
+        };
+let numQuestionsArray = [];
+
+    function checkAndIncrement(numQuestionsArray, variable) {
+    // Create a copy of the variable to manipulate it
+    let incrementedVariable = variable;
+    // While the variable is present in the array, increment it by 1
+    while (numQuestionsArray.includes(incrementedVariable)) {
+        incrementedVariable++;
+    }
+    // Add the variable to the array
+    numQuestionsArray.push(incrementedVariable);
+    // Return the variable, which might have been incremented
+    return incrementedVariable;
+}
 
 
+        function addQuestionField(questionIndex) {
+            const questionContainer = document.getElementById('questionsContainer');
 
-  function addQuestionField() {
-    const questionContainer = document.getElementById('questionsContainer');
-    let numQuestions = questionContainer.children.length + 1; // Get the number of existing questions and add 1
-    let questionField = document.createElement('div');
-    questionField.classList.add('form-group', 'question-field');
-    questionField.id = 'questionField' + numQuestions;
-    questionField.innerHTML = `
+            let numQuestions;
+            if(questionIndex){
+
+                  numQuestions = checkAndIncrement(numQuestionsArray, questionIndex)
+            }else{
+                let containerLength = questionContainer.children.length + 1;
+                 numQuestions = checkAndIncrement(numQuestionsArray, containerLength)
+            }
+
+            let questionField = document.createElement('div');
+            questionField.classList.add('form-group', 'question-field');
+            questionField.id = 'questionField' + numQuestions;
+            questionField.innerHTML = `
       <div class="card mb-3">
         <div class="card-body">
           <h5 class="card-title">Frage</h5>
@@ -98,37 +121,38 @@
         </div>
       </div>
     `;
-    questionContainer.appendChild(questionField);
-  }
+            questionContainer.appendChild(questionField);
+        }
 
 
+        function generateAnswerFields(questionIndex,data) {
 
-  function generateAnswerFields(questionIndex) {
-    let answerType = document.getElementById('answerType' + questionIndex).value;
-    let answerContainer = document.getElementById('answersContainer' + questionIndex);
-    answerContainer.innerHTML = ''; // Clear previous answer fields
+            let answerType = document.getElementById('answerType' + questionIndex).value;
 
-    if (answerType === 'single_choice' || answerType === 'multiple_choice' || answerType === 'free_text') {
-        document.getElementById('addAnswerButton' + questionIndex).classList.remove('d-none');
-    } else {
-        document.getElementById('addAnswerButton' + questionIndex).classList.add('d-none');
-    }
+            let answerContainer = document.getElementById('answersContainer' + questionIndex);
+            answerContainer.innerHTML = ''; // Clear previous answer fields
 
-    if (answerType === 'single_choice' || answerType === 'multiple_choice') {
-        const numAnswers = 2; // For single and multiple choice, initially show 2 answer fields
-        for (let i = 0; i < numAnswers; i++) {
-            const answerField = document.createElement('div');
-            answerField.classList.add('form-group');
-            answerField.innerHTML = `
+            if (answerType === 'single_choice' || answerType === 'multiple_choice' || answerType === 'free_text') {
+                document.getElementById('addAnswerButton' + questionIndex).classList.remove('d-none');
+            } else {
+                document.getElementById('addAnswerButton' + questionIndex).classList.add('d-none');
+            }
+
+            if (answerType === 'single_choice' || answerType === 'multiple_choice') {
+                const numAnswers = 2; // For single and multiple choice, initially show 2 answer fields
+                for (let i = 0; i < numAnswers; i++) {
+                    const answerField = document.createElement('div');
+                    answerField.classList.add('form-group');
+                    answerField.innerHTML = `
                 <label for="answer${i + 1}">Mögliche Antwort:</label>
                 <input type="text" class="form-control" name="answers${questionIndex}[]" id="answer${i + 1}" required>
             `;
-            answerContainer.appendChild(answerField);
-        }
-    } else if (answerType === 'scale_rating') {
-        const answerField = document.createElement('div');
-        answerField.classList.add('form-group');
-        answerField.innerHTML = `
+                    answerContainer.appendChild(answerField);
+                }
+            } else if (answerType === 'scale_rating') {
+                const answerField = document.createElement('div');
+                answerField.classList.add('form-group');
+                answerField.innerHTML = `
            <div class="form-group">
            <label for="answer">Skala/Bewertung:</label>
            <input type="range" class="form-control-range" min="1" max="5" step="1" name="answers${questionIndex}[]" id="slider${questionIndex}" onchange="updateOutput(${questionIndex})" required>
@@ -136,112 +160,192 @@
          </div>
 
         `;
-        answerContainer.appendChild(answerField);
-    } else {
-        const answerField = document.createElement('div');
-        answerField.classList.add('form-group');
-        answerField.innerHTML = `
+                answerContainer.appendChild(answerField);
+            } else {
+                const answerField = document.createElement('div');
+                answerField.classList.add('form-group');
+                answerField.innerHTML = `
             <label for="answer">Antwort:</label>
             <input type="text" class="form-control" name="answers${questionIndex}[]" required>
         `;
-        answerContainer.appendChild(answerField);
+                answerContainer.appendChild(answerField);
+            }
+        }
+
+        function addAnswerField(questionIndex) {
+            const answersContainer = document.getElementById('answersContainer' + questionIndex);
+
+            const answerField = document.createElement('div');
+            answerField.classList.add('form-group', 'mb-3', 'position-relative', 'd-flex', 'align-items-center');
+
+            const inputWrapper = document.createElement('div');
+            inputWrapper.classList.add('flex-grow-1', 'me-2');
+
+            const answerControlsWrapper = document.createElement('div');
+            answerControlsWrapper.classList.add('d-flex', 'align-items-center');
+
+            const label = document.createElement('label');
+            label.innerHTML = 'Mögliche Antwort :'; // Nummerierung der Antwort entsprechend der Anzahl der vorhandenen Antworten
+            label.setAttribute('for', 'answer' + questionIndex + '-' + (answersContainer.children.length + 1)); // Eindeutige ID für das Label
+            label.classList.add('me-2');
+
+            const inputField = document.createElement('input');
+            inputField.classList.add('form-control');
+            inputField.type = 'text';
+            inputField.name = 'answers' + questionIndex + '[]';
+            inputField.id = 'answer' + questionIndex + '-' + (answersContainer.children.length + 1); // Eindeutige ID für das Eingabefeld
+            inputField.required = true;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.innerHTML = '<i class="bi bi-trash"></i>';
+            deleteButton.classList.add('btn', 'btn-danger', 'ms-2', 'ml-2');
+            deleteButton.onclick = function () {
+                removeAnswerField(answerField);
+            };
+
+            answerControlsWrapper.appendChild(inputField);
+            answerControlsWrapper.appendChild(deleteButton);
+
+            inputWrapper.appendChild(label);
+            inputWrapper.appendChild(answerControlsWrapper);
+
+            answerField.appendChild(inputWrapper);
+            answersContainer.appendChild(answerField);
+        }
+
+
+        function removeAnswerField(answerField) {
+            answerField.remove();
+        }
+
+        //for skala
+        function updateOutput(questionIndex) {
+            let slider = document.getElementById('slider' + questionIndex);
+            let output = document.getElementById('output' + questionIndex);
+            output.innerText = convertToText(slider.value);
+        }
+
+        //for skala
+        function convertToText(value) {
+            // Hier können Sie je nach Wert des Sliders den entsprechenden Text definieren
+            switch (parseInt(value)) {
+                case 1:
+                    return 'Sehr schlecht';
+                case 2:
+                    return 'Schlecht';
+                case 3:
+                    return 'Mittel';
+                case 4:
+                    return 'Gut';
+                case 5:
+                    return 'Sehr gut';
+                default:
+                    return 'Mittel';
+            }
+        }
+
+        function removeQuestionField(questionIndex) {
+
+
+            let questionToRemove = document.getElementById('questionField' + questionIndex);
+
+            questionToRemove.remove();
+
+
+        }
+
+        //clear full form
+        function clearSurvey() {
+
+            const surveyForm = document.getElementById('surveyForm');
+            surveyForm.reset(); // Formular zurücksetzen
+            const questionsContainer = document.getElementById('questionsContainer');
+            questionsContainer.innerHTML = ''; // Alle dynamisch generierten Fragen entfernen
+            addQuestionField();
+
+
+        }
+
+
+        //-------------------------------
+
+var data = {
+            'surveyTitle': 'Überschrift_1',
+            'calendar_day': '02/04/2024',
+            'questions[1]': 'Frage_1',
+            'answerType1': 'single_choice',
+            'answers1[]': ['Antwortmöglichkeit1_1', 'Antwortmöglichkeit2_1'],
+            'questions[2]': 'Frage_2',
+            'answerType2': 'multiple_choice',
+            'answers2[]': ['Antwortmöglichkeit1_2', 'Antwortmöglichkeit2_2'],
+            'questions[3]': 'Frage_3',
+            'answerType3': 'free_text',
+            'answers3[]': ['Antwortmöglichkeit1_3', 'Antwortmöglichkeit2_3'],
+            'questions[5]': 'Skala',
+            'answerType5': 'scale_rating',
+            'answers5[]': '3'
+        };
+
+
+        /**
+ * Populates the form fields based on the provided data object.
+ * @param {Object} data - The data object containing survey details.
+ */
+function populateFormFromData(data) {
+    // Set survey title and end date
+    document.getElementById('surveyTitle').value = data['surveyTitle'];
+    document.getElementById('calendar_day').value = data['calendar_day'];
+
+    // Loop through data to populate questions and answers
+    for (const key in data) {
+        // Check if the key corresponds to a question
+        if (key.startsWith('questions[')) {
+            // Extract the question index from the key
+            const questionIndex = parseInt(key.match(/\d+/)[0]);
+
+            // Add a question field with the extracted index
+            addQuestionField(questionIndex);
+
+            // Find the question field in the DOM
+            let questionField = document.getElementById('question' + questionIndex);
+
+            // If the question field is found
+            if (questionField) {
+                // Set the question text
+                questionField.value = data[key];
+
+                // Get the answer type and answers corresponding to the question index
+                const answerType = data['answerType' + questionIndex];
+                let answers = data['answers' + questionIndex + '[]'];
+
+                // Find the answer type select element
+                const answerTypeSelect = document.getElementById('answerType' + questionIndex);
+
+                // If the answer type select element is found
+                if (answerTypeSelect) {
+
+                    // Set the answer type value
+                    answerTypeSelect.value = answerType;
+
+                    // Generate answer fields based on answer type
+                    generateAnswerFields(questionIndex, answerType, answers);
+                }
+            }
+        }
     }
-  }
-
-function addAnswerField(questionIndex) {
-    const answersContainer = document.getElementById('answersContainer' + questionIndex);
-
-    const answerField = document.createElement('div');
-    answerField.classList.add('form-group', 'mb-3', 'position-relative', 'd-flex', 'align-items-center');
-
-    const inputWrapper = document.createElement('div');
-    inputWrapper.classList.add('flex-grow-1', 'me-2');
-
-    const answerControlsWrapper = document.createElement('div');
-    answerControlsWrapper.classList.add('d-flex', 'align-items-center');
-
-    const label = document.createElement('label');
-    label.innerHTML = 'Mögliche Antwort :'; // Nummerierung der Antwort entsprechend der Anzahl der vorhandenen Antworten
-    label.setAttribute('for', 'answer' + questionIndex + '-' + (answersContainer.children.length + 1)); // Eindeutige ID für das Label
-    label.classList.add('me-2');
-
-    const inputField = document.createElement('input');
-    inputField.classList.add('form-control');
-    inputField.type = 'text';
-    inputField.name = 'answers' + questionIndex + '[]';
-    inputField.id = 'answer' + questionIndex + '-' + (answersContainer.children.length + 1); // Eindeutige ID für das Eingabefeld
-    inputField.required = true;
-
-    const deleteButton = document.createElement('button');
-    deleteButton.innerHTML = '<i class="bi bi-trash"></i>';
-    deleteButton.classList.add('btn', 'btn-danger', 'ms-2', 'ml-2');
-    deleteButton.onclick = function() {
-        removeAnswerField(answerField);
-    };
-
-    answerControlsWrapper.appendChild(inputField);
-    answerControlsWrapper.appendChild(deleteButton);
-
-    inputWrapper.appendChild(label);
-    inputWrapper.appendChild(answerControlsWrapper);
-
-    answerField.appendChild(inputWrapper);
-    answersContainer.appendChild(answerField);
 }
 
 
-function removeAnswerField(answerField) {
-    answerField.remove();
-}
+        document.addEventListener('DOMContentLoaded', function () {
+            // Hier rufen wir die Funktion zum Bevölkern des Formulars auf, nachdem das DOM vollständig geladen ist
+          if(typeof data !=='undefined'){
+            populateFormFromData(data);
+          }else{
+              addQuestionField();
+          }
 
-//for skala
-function updateOutput(questionIndex) {
-  let slider = document.getElementById('slider' + questionIndex);
-  let output = document.getElementById('output' + questionIndex);
-  output.innerText = convertToText(slider.value);
-}
-
-//for skala
-function convertToText(value) {
-  // Hier können Sie je nach Wert des Sliders den entsprechenden Text definieren
-  switch (parseInt(value)) {
-    case 1:
-      return 'Sehr schlecht';
-    case 2:
-      return 'Schlecht';
-    case 3:
-      return 'Mittel';
-    case 4:
-      return 'Gut';
-    case 5:
-      return 'Sehr gut';
-    default:
-      return 'Mittel';
-  }
-}
-
-function removeQuestionField(questionIndex) {
+        });
 
 
-    let questionToRemove = document.getElementById('questionField' + questionIndex);
-
-    questionToRemove.remove();
-
-
-}
-
-//clear full form
-function clearSurvey() {
-
-  const surveyForm = document.getElementById('surveyForm');
-  surveyForm.reset(); // Formular zurücksetzen
-  const questionsContainer = document.getElementById('questionsContainer');
-  questionsContainer.innerHTML = ''; // Alle dynamisch generierten Fragen entfernen
-    addQuestionField();
-
-
-}
-
-
-</script>
+    </script>
 {% endblock %}
