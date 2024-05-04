@@ -112,6 +112,7 @@ let numQuestionsArray = [];
 
           </div>
           <!-- Hier wird der Button für das Hinzufügen einer weiteren Antwort eingefügt -->
+
           <button type="button" class="btn btn-secondary mt-2 d-none" id="addAnswerButton${numQuestions}" onclick="addAnswerField(${numQuestions})">Antwort hinzufügen</button>
           <!-- Hier wird der Button zum Löschen dieser Frage eingefügt -->
           <button type="button" class="btn btn-danger mt-2" onclick="removeQuestionField(${numQuestions})">Frage löschen</button>
@@ -125,93 +126,147 @@ let numQuestionsArray = [];
         }
 
 
-        function generateAnswerFields(questionIndex,data) {
+ function generateAnswerFields(questionIndex, answerType, answers) {
+    // Find the answer type select element
+    const answerTypeSelect = document.getElementById('answerType' + questionIndex);
 
-            let answerType = document.getElementById('answerType' + questionIndex).value;
+    // If the answer type select element is not found, exit the function
+    if (!answerTypeSelect) return;
 
-            let answerContainer = document.getElementById('answersContainer' + questionIndex);
-            answerContainer.innerHTML = ''; // Clear previous answer fields
+    // Get the selected answer type
+    answerType = answerType || answerTypeSelect.value;
 
-            if (answerType === 'single_choice' || answerType === 'multiple_choice' || answerType === 'free_text') {
-                document.getElementById('addAnswerButton' + questionIndex).classList.remove('d-none');
-            } else {
-                document.getElementById('addAnswerButton' + questionIndex).classList.add('d-none');
-            }
+    // Find the answers container
+    const answerContainer = document.getElementById('answersContainer' + questionIndex);
+
+    // Clear previous answer fields
+    answerContainer.innerHTML = '';
+
+    // If answers are provided, use them; otherwise, use default values based on the answer type
+    if (answers) {
+        // If answers is not an array, convert it to an array
+        if (!Array.isArray(answers)) {
+            answers = [answers];
+        }
+
+        // Generate answer fields based on the provided answers
+        for (let i = 0; i < answers.length; i++) {
+            const answerField = document.createElement('div');
+            answerField.classList.add('form-group');
 
             if (answerType === 'single_choice' || answerType === 'multiple_choice') {
-                const numAnswers = 2; // For single and multiple choice, initially show 2 answer fields
-                for (let i = 0; i < numAnswers; i++) {
-                    const answerField = document.createElement('div');
-                    answerField.classList.add('form-group');
-                    answerField.innerHTML = `
-                <label for="answer${i + 1}">Mögliche Antwort:</label>
-                <input type="text" class="form-control" name="answers${questionIndex}[]" id="answer${i + 1}" required>
-            `;
-                    answerContainer.appendChild(answerField);
-                }
+                answerField.innerHTML = `
+                    <label for="answer${questionIndex}-${i + 1}">Mögliche Antwort:</label>
+                    <input type="text" class="form-control" name="answers${questionIndex}[]" id="answer${questionIndex}-${i + 1}" value="${answers[i]}" required>
+                `;
             } else if (answerType === 'scale_rating') {
-                const answerField = document.createElement('div');
-                answerField.classList.add('form-group');
                 answerField.innerHTML = `
-           <div class="form-group">
-           <label for="answer">Skala/Bewertung:</label>
-           <input type="range" class="form-control-range" min="1" max="5" step="1" name="answers${questionIndex}[]" id="slider${questionIndex}" onchange="updateOutput(${questionIndex})" required>
-           <output for="slider${questionIndex}" id="output${questionIndex}">Mittel</output>
-         </div>
-
-        `;
-                answerContainer.appendChild(answerField);
+                    <div class="form-group">
+                        <label for="answer">Skala/Bewertung:</label>
+                        <input type="range" class="form-control-range" min="1" max="5" step="1" name="answers${questionIndex}[]" id="slider${questionIndex}" value="${answers[i]}" onchange="updateOutput(${questionIndex})" required>
+                        <output for="slider${questionIndex}" id="output${questionIndex}">${convertToText(answers[i])}</output>
+                    </div>
+                `;
             } else {
+                answerField.innerHTML = `
+                    <label for="answer">Antwort:</label>
+                    <input type="text" class="form-control" name="answers${questionIndex}[]" value="${answers[i]}" required>
+                `;
+            }
+
+            // Append the answer field to the answer container
+            answerContainer.appendChild(answerField);
+        }
+    } else {
+        // If no answers are provided, generate default answer fields based on the answer type
+        if (answerType === 'single_choice' || answerType === 'multiple_choice') {
+            // For single and multiple choice, initially show 2 answer fields
+            for (let i = 0; i < 2; i++) {
                 const answerField = document.createElement('div');
                 answerField.classList.add('form-group');
                 answerField.innerHTML = `
-            <label for="answer">Antwort:</label>
-            <input type="text" class="form-control" name="answers${questionIndex}[]" required>
-        `;
+                    <label for="answer${questionIndex}-${i + 1}">Mögliche Antwort:</label>
+                    <input type="text" class="form-control" name="answers${questionIndex}[]" id="answer${questionIndex}-${i + 1}" placeholder="Antwort eingeben..." required>
+                `;
+                // Append the answer field to the answer container
                 answerContainer.appendChild(answerField);
             }
+        } else if (answerType === 'scale_rating') {
+            const answerField = document.createElement('div');
+            answerField.classList.add('form-group');
+            answerField.innerHTML = `
+                <div class="form-group">
+                    <label for="answer">Skala/Bewertung:</label>
+                    <input type="range" class="form-control-range" min="1" max="5" step="1" name="answers${questionIndex}[]" id="slider${questionIndex}" onchange="updateOutput(${questionIndex})" required>
+                    <output for="slider${questionIndex}" id="output${questionIndex}">Mittel</output>
+                </div>
+            `;
+            // Append the answer field to the answer container
+            answerContainer.appendChild(answerField);
+        } else {
+            const answerField = document.createElement('div');
+            answerField.classList.add('form-group');
+            answerField.innerHTML = `
+                <label for="answer">Antwort:</label>
+                <input type="text" class="form-control" name="answers${questionIndex}[]" placeholder="Antwort eingeben..." required>
+            `;
+            // Append the answer field to the answer container
+            answerContainer.appendChild(answerField);
         }
+    }
+
+    // Show or hide the "Add Answer" button based on the answer type
+    if (answerType === 'single_choice' || answerType === 'multiple_choice' || answerType === 'free_text') {
+        document.getElementById('addAnswerButton' + questionIndex).classList.remove('d-none');
+    } else {
+        document.getElementById('addAnswerButton' + questionIndex).classList.add('d-none');
+    }
+}
+
+
+
+
 
         function addAnswerField(questionIndex) {
-            const answersContainer = document.getElementById('answersContainer' + questionIndex);
+    const answersContainer = document.getElementById('answersContainer' + questionIndex);
 
-            const answerField = document.createElement('div');
-            answerField.classList.add('form-group', 'mb-3', 'position-relative', 'd-flex', 'align-items-center');
+    const answerField = document.createElement('div');
+    answerField.classList.add('form-group', 'mb-3', 'position-relative', 'd-flex', 'align-items-center');
 
-            const inputWrapper = document.createElement('div');
-            inputWrapper.classList.add('flex-grow-1', 'me-2');
+    const inputWrapper = document.createElement('div');
+    inputWrapper.classList.add('flex-grow-1', 'me-2');
 
-            const answerControlsWrapper = document.createElement('div');
-            answerControlsWrapper.classList.add('d-flex', 'align-items-center');
+    const answerControlsWrapper = document.createElement('div');
+    answerControlsWrapper.classList.add('d-flex', 'align-items-center');
 
-            const label = document.createElement('label');
-            label.innerHTML = 'Mögliche Antwort :'; // Nummerierung der Antwort entsprechend der Anzahl der vorhandenen Antworten
-            label.setAttribute('for', 'answer' + questionIndex + '-' + (answersContainer.children.length + 1)); // Eindeutige ID für das Label
-            label.classList.add('me-2');
+    const label = document.createElement('label');
+    label.innerHTML = 'Mögliche Antwort :'; // Nummerierung der Antwort entsprechend der Anzahl der vorhandenen Antworten
+    label.setAttribute('for', 'answer' + questionIndex + '-' + (answersContainer.children.length + 1)); // Eindeutige ID für das Label
+    label.classList.add('me-2');
 
-            const inputField = document.createElement('input');
-            inputField.classList.add('form-control');
-            inputField.type = 'text';
-            inputField.name = 'answers' + questionIndex + '[]';
-            inputField.id = 'answer' + questionIndex + '-' + (answersContainer.children.length + 1); // Eindeutige ID für das Eingabefeld
-            inputField.required = true;
+    const inputField = document.createElement('input');
+    inputField.classList.add('form-control');
+    inputField.type = 'text';
+    inputField.name = 'answers' + questionIndex + '[]';
+    inputField.id = 'answer' + questionIndex + '-' + (answersContainer.children.length + 1); // Eindeutige ID für das Eingabefeld
+    inputField.required = true;
 
-            const deleteButton = document.createElement('button');
-            deleteButton.innerHTML = '<i class="bi bi-trash"></i>';
-            deleteButton.classList.add('btn', 'btn-danger', 'ms-2', 'ml-2');
-            deleteButton.onclick = function () {
-                removeAnswerField(answerField);
-            };
+    const deleteButton = document.createElement('button');
+    deleteButton.innerHTML = '<i class="bi bi-trash"></i>';
+    deleteButton.classList.add('btn', 'btn-danger', 'ms-2', 'ml-2');
+    deleteButton.onclick = function () {
+        removeAnswerField(answerField);
+    };
 
-            answerControlsWrapper.appendChild(inputField);
-            answerControlsWrapper.appendChild(deleteButton);
+    answerControlsWrapper.appendChild(inputField);
+    answerControlsWrapper.appendChild(deleteButton);
 
-            inputWrapper.appendChild(label);
-            inputWrapper.appendChild(answerControlsWrapper);
+    inputWrapper.appendChild(label);
+    inputWrapper.appendChild(answerControlsWrapper);
 
-            answerField.appendChild(inputWrapper);
-            answersContainer.appendChild(answerField);
-        }
+    answerField.appendChild(inputWrapper);
+    answersContainer.appendChild(answerField);
+}
 
 
         function removeAnswerField(answerField) {
@@ -317,7 +372,7 @@ function populateFormFromData(data) {
                 // Get the answer type and answers corresponding to the question index
                 const answerType = data['answerType' + questionIndex];
                 let answers = data['answers' + questionIndex + '[]'];
-
+                console.log(answers)
                 // Find the answer type select element
                 const answerTypeSelect = document.getElementById('answerType' + questionIndex);
 
