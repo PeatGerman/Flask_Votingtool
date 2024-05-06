@@ -6,7 +6,7 @@ user = Blueprint('user', __name__)
 
 @user.route('/generate_voting', methods=['GET', 'POST'])
 def login_page():
-    return render_template("create_voting.html")
+    return render_template("generate_voting.html")
 
 
 @user.route('/vote', methods=['POST'])
@@ -23,12 +23,12 @@ def results():
 
 @user.route('/submit_survey', methods=['GET', 'POST'])
 def insert_vote():
-    #print(request.form)
-    # for key, values in request.form.lists():
-    #    print(f"headline: {key}")
-    #    for value in values:
-    #        print(f"Value: {value}")
-    # print(" ")
+    print(request.form)
+    for key, values in request.form.lists():
+        print(f"headline: {key}")
+        for value in values:
+            print(f"Value: {value}")
+            print(" ")
     return redirect(url_for('user.login_page'))
 
 
