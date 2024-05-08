@@ -23,12 +23,58 @@ def results():
 
 @user.route('/submit_survey', methods=['GET', 'POST'])
 def insert_vote():
-    print(request.form)
-    for key, values in request.form.lists():
-        print(f"headline: {key}")
-        for value in values:
-            print(f"Value: {value}")
-            print(" ")
+    from datetime import datetime
+    data = request.form
+    from app import db
+    from db.models import Voting, UserQuestion, PossibleSelectionOption
+    # Erstellung eines neuen Voting-Eintrags
+    new_voting = Voting(
+        voting_creator_id=1,  # Angenommen, der Benutzer mit ID 1 erstellt die Umfrage
+        start_date=datetime.strptime(data['calendar_day'], '%d/%m/%Y'),
+        acces_by_all=True  # Hier anpassen, je nach Bedarf
+    )
+    db.session.add(new_voting)
+    db.session.flush()  # ID von new_voting wird benötigt für die Fragen
+
+    # Durchgehen der Fragen und Antworten
+    questions = {key: value for key, value in data.items() if key.startswith('questions')}
+    for q_key, q_text in questions.items():
+        # Extrahieren der Frage-Nummer
+        q_number = q_key.split('[')[-1].rstrip(']')
+        response_type = data.get(f'answerType{q_number}')
+        # Neuen Frage-Eintrag erstellen
+        new_question = UserQuestion(
+            text=q_text,
+            voting_id=new_voting.id,
+            response_type=response_type,
+            global_use=False  # Beispielweise immer False, anpassen je nach Bedarf
+        )
+        db.session.add(new_question)
+        db.session.flush()  # ID von new_question wird benötigt für die Antwortoptionen
+
+        # Antwortoptionen für diese Frage
+        options = data.getlist(f'answers{q_number}[]')
+        for option_text in options:
+            new_option = PossibleSelectionOption(
+                user_question_id=new_question.id,
+                text=option_text
+            )
+            db.session.add(new_option)
+
+    db.session.commit()
+
+    return f"Voting ID {new_voting.id} gespeichert mit {len(questions)} Fragen."
+
+
+
+
+
+  #  print(request.form)
+  #  for key, values in request.form.lists():
+  #      print(f"headline: {key}")
+  #      for value in values:
+  #          print(f"Value: {value}")
+  #          print(" ")
     return redirect(url_for('user.login_page'))
 
 
