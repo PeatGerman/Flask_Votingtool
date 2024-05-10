@@ -1,9 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 import requests
+from flask_login import login_required
 
 user = Blueprint('user', __name__)
 
 
+@login_required
 @user.route('/generate_voting', methods=['GET', 'POST'])
 def login_page():
     return render_template("generate_voting.html")
@@ -25,6 +27,7 @@ def results():
 def insert_vote():
     from datetime import datetime
     data = request.form
+    print(data)
     from app import db
     from db.models import Voting, UserQuestion, PossibleSelectionOption
     # Erstellung eines neuen Voting-Eintrags
@@ -65,22 +68,17 @@ def insert_vote():
 
     return f"Voting ID {new_voting.id} gespeichert mit {len(questions)} Fragen."
 
-
-
-
-
-  #  print(request.form)
-  #  for key, values in request.form.lists():
-  #      print(f"headline: {key}")
-  #      for value in values:
-  #          print(f"Value: {value}")
-  #          print(" ")
+    #  print(request.form)
+    #  for key, values in request.form.lists():
+    #      print(f"headline: {key}")
+    #      for value in values:
+    #          print(f"Value: {value}")
+    #          print(" ")
     return redirect(url_for('user.login_page'))
 
 
 @user.route('/test_survey', methods=['GET', 'POST'])
 def voting_overview():
-
     return render_template("voting_overview.html")
 
 

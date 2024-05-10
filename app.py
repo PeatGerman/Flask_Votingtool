@@ -17,6 +17,9 @@ class Configuration:
 
 config = Configuration()
 
+
+
+
 app = Flask(__name__)
 app.secret_key = config.secret_key
 app.config['SQLALCHEMY_DATABASE_URI'] = config.sql_alchemy_database_uri
@@ -31,7 +34,10 @@ login_manager.login_view = '/'  # Setze die Login-Route
 
 @login_manager.user_loader
 def load_user(user_id):
-    pass  # Hier wird die Funktion definiert, aber keine Aktion durchgeführt
+    if user_id is not None:
+        return user_loader(user_id)  # Hier rufen Sie Ihre Methode auf, um den Benutzer zu laden
+    return None
+
 
 
 from controller.auth import auth
