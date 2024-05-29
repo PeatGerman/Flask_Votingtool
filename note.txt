@@ -5,7 +5,7 @@ Table user {
   id int [primary key]
   email String
   password String
-
+  is_active Boolean, default=True)
   auth int
 
 }
