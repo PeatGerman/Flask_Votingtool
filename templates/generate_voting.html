@@ -197,7 +197,7 @@ let numQuestionsArray = [];
             answerField.innerHTML = `
                 <div class="form-group">
                     <label for="answer">Skala/Bewertung:</label>
-                    <input type="range" class="form-control-range" min="1" max="5" step="1" name="answers${questionIndex}[]" id="slider${questionIndex}" onchange="updateOutput(${questionIndex})" required>
+                    <input type="range" class="form-control-range" min="0" max="100" step="25" name="answers${questionIndex}[]" id="slider${questionIndex}" onchange="updateOutput(${questionIndex})" required>
                     <output for="slider${questionIndex}" id="output${questionIndex}">Mittel</output>
                 </div>
             `;
@@ -284,15 +284,15 @@ let numQuestionsArray = [];
         function convertToText(value) {
             // Hier können Sie je nach Wert des Sliders den entsprechenden Text definieren
             switch (parseInt(value)) {
-                case 1:
+                case 0:
                     return 'Sehr schlecht';
-                case 2:
+                case 25:
                     return 'Schlecht';
-                case 3:
+                case 50:
                     return 'Mittel';
-                case 4:
+                case 75:
                     return 'Gut';
-                case 5:
+                case 100:
                     return 'Sehr gut';
                 default:
                     return 'Mittel';
